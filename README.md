@@ -1,3 +1,1 @@
-# FacebookFriendsScarpper
-# FetchFriends
-# FetchFriends
+# Python Script for Fetch Facebook Friends
