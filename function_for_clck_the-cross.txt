@@ -1,0 +1,47 @@
+def automate(driver, url, timeout=30, verbose=False):
+    """Scrape data from a given URL."""
+    wait = WebDriverWait(driver, timeout)
+    
+    if verbose:
+        print("GET", url)
+    
+    driver.get(url)
+
+    if verbose:
+        print("Waiting for elements to load... timeout={0}".format(timeout))
+
+    # Click on the element before starting scrolling
+    try:
+        element_to_click = wait.until(EC.element_to_be_clickable((By.XPATH, "//i[@class='x1b0d499 x1d69dk1']")))
+        element_to_click.click()
+    except Exception as e:
+        print("Error clicking on the element:", e)
+
+    start_time = time.time()
+    scroll_time = 180  # Stop scrolling after 60 seconds
+    
+    all_texts = []  # To store all text encountered during scrolling
+    
+    while time.time() - start_time < scroll_time:
+        # Execute JavaScript code to get all text on the current page
+        page_texts = driver.execute_script("""
+            var elements = document.evaluate("//*[not(self::script)]/text()", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+            var texts = [];
+            for (var i = 0; i < elements.snapshotLength; i++) {
+                texts.push(elements.snapshotItem(i).nodeValue.trim());
+            }
+            return texts;
+        """)
+        all_texts.extend(page_texts)
+        
+        # Scroll down
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        
+        # Wait for some time to load more content
+        time.sleep(30)
+        
+        # You can add your custom conditions here to determine when to stop scrolling
+        
+    # Now that scrolling has stopped, let's save the texts
+    driver.quit()  # Close the driver after getting the texts
+    return all_texts
